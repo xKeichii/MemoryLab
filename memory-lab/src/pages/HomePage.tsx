@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { Button } from '../components/atoms/Button/Button'
 import { GameBoard, type CellPosition } from '../components/organisms/GameBoard/GameBoard'
 import { MemoryOverview } from '../components/organisms/MemoryOverview/MemoryOverview'
 import { TopBar } from '../components/organisms/TopBar/TopBar'
@@ -28,6 +29,17 @@ export function HomePage() {
     generateActiveCells(BOARD_SIZE, ACTIVE_CELL_COUNT),
   )
   const [boardKey, setBoardKey] = useState(0)
+  const [isShowingActiveCells, setIsShowingActiveCells] = useState(true)
+  const [isAnswerChecked, setIsAnswerChecked] = useState(false)
+  const [resultMessage, setResultMessage] = useState('Zapamiętaj podświetlone pola.')
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      setIsShowingActiveCells(false)
+    }, 1500)
+
+    return () => window.clearTimeout(timer)
+  }, [boardKey])
 
   const handleCellClick = ({ row, column }: CellPosition) => {
     const cellKey = `${row}-${column}`
@@ -48,7 +60,22 @@ export function HomePage() {
   const handleStart = () => {
     setActiveCells(generateActiveCells(BOARD_SIZE, ACTIVE_CELL_COUNT))
     setClickedCells(new Set())
+    setIsShowingActiveCells(true)
+    setIsAnswerChecked(false)
+    setResultMessage('Zapamiętaj podświetlone pola.')
     setBoardKey((currentBoardKey) => currentBoardKey + 1)
+  }
+
+  const handleCheckAnswer = () => {
+    const activeCellKeys = new Set(
+      activeCells.map(({ row, column }) => `${row}-${column}`),
+    )
+    const isCorrect =
+      clickedCells.size === activeCellKeys.size &&
+      [...clickedCells].every((cellKey) => activeCellKeys.has(cellKey))
+
+    setIsAnswerChecked(true)
+    setResultMessage(isCorrect ? 'Poprawna odpowiedź!' : 'Nie tym razem. Spróbuj ponownie.')
   }
 
   return (
@@ -60,14 +87,25 @@ export function HomePage() {
           <div>
             <p className="text-sm font-semibold uppercase tracking-widest text-blue-600">Ćwiczenie pamięci</p>
           </div>
-          <p className="text-sm font-semibold text-slate-600">Wybrane: {clickedCells.size}</p>
+          <div className="flex items-center gap-4">
+            <p className="text-sm font-semibold text-slate-600">Wybrane: {clickedCells.size}</p>
+            <Button
+              onClick={handleCheckAnswer}
+              variant="secondary"
+              disabled={isShowingActiveCells || isAnswerChecked}
+            >
+              Sprawdź odpowiedź
+            </Button>
+          </div>
         </div>
+        <p className="mt-4 text-sm text-slate-500">{resultMessage}</p>
         <div className="mx-auto mt-6 max-w-md rounded-xl bg-slate-50 p-4 sm:p-6">
           <GameBoard
             key={boardKey}
             size={BOARD_SIZE}
-            activeCells={activeCells}
+            activeCells={isShowingActiveCells ? activeCells : []}
             onCellClick={handleCellClick}
+            disabled={isShowingActiveCells || isAnswerChecked}
           />
         </div>
       </section>
