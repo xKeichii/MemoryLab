@@ -1,5 +1,5 @@
-import { Badge } from '../atoms/Badge'
-import { Heading } from '../atoms/Heading'
+import { Badge } from '../../atoms/Badge/Badge'
+import { Heading } from '../../atoms/Heading/Heading'
 
 type FeatureCardProps = {
   title: string
