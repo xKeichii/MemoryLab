@@ -68,6 +68,11 @@ export function HomePage() {
     setIsAnswerChecked(false)
     setResultMessage('Zapamiętaj podświetlone pola.')
     setBoardKey((currentBoardKey) => currentBoardKey + 1)
+    const updatedStats: GameStats = {
+      ...stats,
+      gamesPlayed: stats.gamesPlayed + 1,
+    }
+    setStats(updatedStats)
   }
 
   const handleCheckAnswer = () => {
@@ -79,7 +84,7 @@ export function HomePage() {
       [...clickedCells].every((cellKey) => activeCellKeys.has(cellKey))
     
     const updatedStats: GameStats = {
-      gamesPlayed: stats.gamesPlayed + 1,
+      ...stats,
       gamesWon: isCorrect ? stats.gamesWon + 1 : stats.gamesWon + 0 
     }
 
