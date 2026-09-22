@@ -123,7 +123,7 @@ export function HomePage() {
           />
         </div>
       </section>
-      <MemoryOverview />
+      <MemoryOverview stats={stats} />
     </DashboardTemplate>
   )
 }
