@@ -10,9 +10,10 @@ type GameBoardProps = {
   size: number
   activeCells: readonly CellPosition[]
   onCellClick?: (position: CellPosition) => void
+  disabled?: boolean
 }
 
-export function GameBoard({ size, activeCells, onCellClick }: GameBoardProps) {
+export function GameBoard({ size, activeCells, onCellClick, disabled = false }: GameBoardProps) {
   const [selectedCells, setSelectedCells] = useState<Set<string>>(new Set())
 
   const handleCellClick = (position: CellPosition) => {
@@ -47,6 +48,7 @@ export function GameBoard({ size, activeCells, onCellClick }: GameBoardProps) {
         isActive={isActive}
         isSelected={selectedCells.has(`${row}-${column}`)}
         onClick={() => handleCellClick(position)}
+        disabled={disabled}
       />
     )
   })
