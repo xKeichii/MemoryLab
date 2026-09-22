@@ -4,8 +4,10 @@ import { GameBoard, type CellPosition } from '../components/organisms/GameBoard/
 import { MemoryOverview } from '../components/organisms/MemoryOverview/MemoryOverview'
 import { TopBar } from '../components/organisms/TopBar/TopBar'
 import { DashboardTemplate } from '../components/templates/DashboardTemplate/DashboardTemplate'
+import type { GameStats } from '../types/GameStats'
+import { getStats, saveStats } from '../utils/storage'
 
-const BOARD_SIZE = 6
+const BOARD_SIZE = 5
 const ACTIVE_CELL_COUNT = 6
 
 function generateActiveCells(size: number, count: number): CellPosition[] {
@@ -32,6 +34,8 @@ export function HomePage() {
   const [isShowingActiveCells, setIsShowingActiveCells] = useState(true)
   const [isAnswerChecked, setIsAnswerChecked] = useState(false)
   const [resultMessage, setResultMessage] = useState('Zapamiętaj podświetlone pola.')
+
+  const [stats, setStats] = useState<GameStats>(getStats)
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -73,10 +77,20 @@ export function HomePage() {
     const isCorrect =
       clickedCells.size === activeCellKeys.size &&
       [...clickedCells].every((cellKey) => activeCellKeys.has(cellKey))
+    
+    const updatedStats: GameStats = {
+      gamesPlayed: stats.gamesPlayed + 1,
+      gamesWon: isCorrect ? stats.gamesWon + 1 : stats.gamesWon + 0 
+    }
 
     setIsAnswerChecked(true)
     setResultMessage(isCorrect ? 'Poprawna odpowiedź!' : 'Nie tym razem. Spróbuj ponownie.')
+    setStats(updatedStats)
   }
+
+  useEffect(() => {
+    saveStats(stats);
+  }, [stats])
 
   return (
     <DashboardTemplate
