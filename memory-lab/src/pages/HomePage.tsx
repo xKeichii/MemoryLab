@@ -5,25 +5,16 @@ import { MemoryOverview } from '../components/organisms/MemoryOverview/MemoryOve
 import { TopBar } from '../components/organisms/TopBar/TopBar'
 import { DashboardTemplate } from '../components/templates/DashboardTemplate/DashboardTemplate'
 import type { GameStats } from '../types/GameStats'
+import {
+  generateActiveCells,
+  getCellKey,
+  isAnswerCorrect,
+  updateStatsAfterSession,
+} from '../utils/gameLogic'
 import { getStats, saveStats } from '../utils/storage'
 
 const BOARD_SIZE = 5
 const ACTIVE_CELL_COUNT = 6
-
-function generateActiveCells(size: number, count: number): CellPosition[] {
-  const positions = new Set<string>()
-
-  while (positions.size < count) {
-    const row = Math.floor(Math.random() * size)
-    const column = Math.floor(Math.random() * size)
-    positions.add(`${row}-${column}`)
-  }
-
-  return [...positions].map((position) => {
-    const [row, column] = position.split('-').map(Number)
-    return { row, column }
-  })
-}
 
 export function HomePage() {
   const [clickedCells, setClickedCells] = useState<Set<string>>(new Set())
@@ -46,7 +37,7 @@ export function HomePage() {
   }, [boardKey])
 
   const handleCellClick = ({ row, column }: CellPosition) => {
-    const cellKey = `${row}-${column}`
+    const cellKey = getCellKey({ row, column })
 
     setClickedCells((currentClickedCells) => {
       const nextClickedCells = new Set(currentClickedCells)
@@ -68,29 +59,18 @@ export function HomePage() {
     setIsAnswerChecked(false)
     setResultMessage('Zapamiętaj podświetlone pola.')
     setBoardKey((currentBoardKey) => currentBoardKey + 1)
-    const updatedStats: GameStats = {
-      ...stats,
-      gamesPlayed: stats.gamesPlayed + 1,
-    }
-    setStats(updatedStats)
+    setStats((currentStats) => updateStatsAfterSession(currentStats, false))
   }
 
   const handleCheckAnswer = () => {
-    const activeCellKeys = new Set(
-      activeCells.map(({ row, column }) => `${row}-${column}`),
-    )
-    const isCorrect =
-      clickedCells.size === activeCellKeys.size &&
-      [...clickedCells].every((cellKey) => activeCellKeys.has(cellKey))
-    
-    const updatedStats: GameStats = {
-      ...stats,
-      gamesWon: isCorrect ? stats.gamesWon + 1 : stats.gamesWon + 0 
-    }
+    const isCorrect = isAnswerCorrect(activeCells, clickedCells)
 
     setIsAnswerChecked(true)
     setResultMessage(isCorrect ? 'Poprawna odpowiedź!' : 'Nie tym razem. Spróbuj ponownie.')
-    setStats(updatedStats)
+    setStats((currentStats) => ({
+      ...currentStats,
+      gamesWon: currentStats.gamesWon + (isCorrect ? 1 : 0),
+    }))
   }
 
   useEffect(() => {
